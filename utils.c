@@ -36,19 +36,22 @@ void	clean(t_table *table)
 	int	i;
 
 	if (table->dongles)
+	{
+		i = -1;
+		while (table->dongles[++i].mutex_init)
+			pthread_mutex_destroy(&table->dongles[i].mutex);
 		free(table->dongles);
+	}
 	if (table->coders)
+	{
+		i = -1;
+		while (table->coders[++i].mutex_init)
+			pthread_mutex_destroy(&table->coders[i].mutex);
 		free(table->coders);
+	}
 	if (table->mutex_init)
 		pthread_mutex_destroy(&table->mutex);
 	if (table->cond_init)
 		pthread_cond_destroy(&table->cond);
-	i = -1;
-	while (table->dongles[++i].mutex_init)
-		pthread_mutex_destroy(&table->dongles[i].mutex);
-	i = -1;
-	while (table->coders[++i].mutex_init)
-		pthread_mutex_destroy(&table->coders[i].mutex);
-	free(table->dongles);
-	free(table->coders);
+	// function free()ing dongle queue nodes
 }

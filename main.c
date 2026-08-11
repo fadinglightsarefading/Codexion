@@ -14,8 +14,8 @@ int	main(int argc, char *argv[])
 	table.end_process = initialise_data(&table);
 	if (table.end_process == false)
 		start_compilation(&table);
-	clean(&table);
 
+	/*
 	printf("Number of coders: %ld\nTime to burnout: %ld\n"
 		"Time to compile: %ld\nTime to debug: %ld\n"
 		"Time to refactor: %ld\nNo. of compiles required: %ld\n"
@@ -32,14 +32,15 @@ int	main(int argc, char *argv[])
 			coder->id, coder->first_dongle->dongle_id,
 			coder->second_dongle->dongle_id);
 	}
+	*/
+
+	clean(&table);
 	return (0);
 }
 
 // WHERE I LEFT OFF:
 //
-// 	made clean(). added bools signifying mutex and cond initialisations.
-// 	now, what I must do is error handle within the simulation. I have
-// 	added an 'error' bool type to table, I think in error functions I
-// 	may change it to true, and within the simulation, coders may break
-// 	at the same point where finished_compiling is checked, where an the
-// 	case of an error shall also be checked.
+//	made a fifo simulation, all I need to do is:
+//	1) implement dongle cooldown somehow
+//	2) implement edf schedule
+//	3) try some edge cases

@@ -28,18 +28,23 @@ static int	initialise_coders(t_table *table)
 		coder = &table->coders[i];
 		coder->id = i + 1;
 		coder->compilations_counter = 0;
+		coder->last_compile_start = 0L;
 		coder->finished_compiling = false;
 		coder->table = table;
 		coder->mutex_init = false;
+		coder->cond_init = false;
 		if (pthread_mutex_init(&coder->mutex, NULL))
 			return (int_err("Mutex failure @ initialise_coders()", NULL));
 		coder->mutex_init = true;
+		if (pthread_cond_init(&coder->cond, NULL))
+			return (int_err("Cond failure @ initialise_coders()", NULL));
+		coder->cond_init = true;
 		assign_dongles(coder, table->dongles, i);
 	}
 	return (0);
 }
 
-int	init_table_mutex_cond(t_table *table)
+static int	init_table_mutex_cond(t_table *table)
 {
 	table->mutex_init = false;
 	table->cond_init = false;
@@ -52,28 +57,41 @@ int	init_table_mutex_cond(t_table *table)
 	return (0);
 }
 
-bool	initialise_data(t_table *table)
+static int	initialise_dongles(t_table *table)
 {
 	int	i;
 
-	table->coders = NULL;
-	table->dongles = NULL;
-	table->coders = malloc(table->number_of_coders * sizeof(t_coder));
-	table->dongles = malloc(table->number_of_coders * sizeof(t_dongle));
-	if (table->coders == NULL || table->dongles == NULL)
-		return ((bool)int_err("Malloc failure @ initialise_data()", NULL));
-	if (init_table_mutex_cond(table))
-		return (true);
 	i = -1;
 	while (++i < table->number_of_coders)
 	{
 		table->dongles[i].mutex_init = false;
+		table->dongles[i].scheduler_mutex_init = false;
 		if (pthread_mutex_init(&table->dongles[i].mutex, NULL))
 			return (int_err("Mutex failure @ initialise_data()", NULL));
 		table->dongles[i].mutex_init = true;
+		if (pthread_mutex_init(&table->dongles[i].scheduler_mutex, NULL))
+			return (int_err("Mutex failure @ initialise_data()", NULL));
+		table->dongles[i].scheduler_mutex_init = true;
 		table->dongles[i].dongle_id = i;
+		table->dongles[i].queue = NULL;
 	}
-	if (initialise_coders(table))
+	return (0);
+}
+
+bool	initialise_data(t_table *table)
+{
+	if (init_table_mutex_cond(table))
 		return (true);
+	table->coders = NULL;
+	table->dongles = NULL;
+	table->coders = malloc(table->number_of_coders * sizeof(t_coder));
+	table->dongles = malloc(table->number_of_coders * sizeof(t_dongle));
+	if (table->dongles == NULL)
+		return ((bool)int_err("Malloc failure @ initialise_data()", NULL));
+	if (initialise_dongles(table))
+		return (true);
+	if (table->coders != NULL)
+		if (initialise_coders(table))
+			return (true);
 	return (false);
 }
