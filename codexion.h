@@ -43,6 +43,7 @@ typedef struct s_dongle
 	bool	mutex_init;
 	bool	scheduler_mutex_init;
 	int	dongle_id;
+	long	last_used_time;
 	t_list		*queue;
 }	t_dongle;
 
@@ -127,5 +128,7 @@ void	ft_lstadd_back(t_list **lst, t_list *new);
 int	enter_queue(t_coder *coder, t_dongle *dongle);
 void	wait_queue(t_coder *coder, t_dongle *dongle);
 void	update_queue(t_dongle *dongle);
+int	wait_dongle_availability(t_coder *coder, t_dongle *first, t_dongle *second);
+int	quit_queue_failsafe(t_table *table, t_coder *coder);
 
 #endif

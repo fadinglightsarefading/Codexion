@@ -40,7 +40,4 @@ int	main(int argc, char *argv[])
 
 // WHERE I LEFT OFF:
 //
-//	made a fifo simulation, all I need to do is:
-//	1) implement dongle cooldown somehow
-//	2) implement edf schedule
-//	3) try some edge cases
+//	implemented dongle cooldown. now ujst do EDF

@@ -1,45 +1,59 @@
 #include "codexion.h"
 
-static void	refactoring(t_coder *coder, t_table *table)
+static void	dongle_cooldown(t_coder *coder, t_dongle *dongle)
 {
-	if (get_bool(&table->mutex, &table->end_process) || coder->finished_compiling)
+	long	dongle_cooldown;
+	long	last_used_time;
+	long	time_elapsed;
+
+	dongle_cooldown = coder->table->dongle_cooldown;
+	last_used_time = get_long(&dongle->mutex, &dongle->last_used_time);
+
+	if (last_used_time == -1L)
 		return ;
-	write_log(coder, REFACTORING);
-	usleep_precise(table->time_to_refactor, table);
+
+	time_elapsed = get_time() - last_used_time;
+	if (time_elapsed < dongle_cooldown)
+		usleep_precise(dongle_cooldown - time_elapsed, coder->table);
 }
 
-static void	debugging(t_coder *coder, t_table *table)
+int	wait_dongle_availability(t_coder *coder, t_dongle *first, t_dongle *second)
 {
-	if (get_bool(&table->mutex, &table->end_process) || coder->finished_compiling)
-		return ;
-	write_log(coder, DEBUGGING);
-	usleep_precise(table->time_to_debug, table);
+	if (enter_queue(coder, first))
+		return (1);
+	if (enter_queue(coder, second))
+		return (1);
+	wait_queue(coder, first);
+	wait_queue(coder, second);
+	dongle_cooldown(coder, first);
+	dongle_cooldown(coder, second);
+	return (0);
 }
 
 static void	compiling(t_coder *coder, t_table *table)
 {
-	if (enter_queue(coder, coder->first_dongle))
+	if (wait_dongle_availability(coder, coder->first_dongle, coder->second_dongle))
 		return ;
-	if (enter_queue(coder, coder->second_dongle))
+	if (quit_queue_failsafe(table, coder))
 		return ;
-	wait_queue(coder, coder->first_dongle);
-	wait_queue(coder, coder->second_dongle);
-	
+
 	pthread_mutex_lock(&coder->first_dongle->mutex);
 	write_log(coder, DONGLE);
 	pthread_mutex_lock(&coder->second_dongle->mutex);
 	write_log(coder, DONGLE);
 
 	set_long(&coder->mutex, &coder->last_compile_start, get_time());
-
 	coder->compilations_counter++;
 	write_log(coder, COMPILING);
 	usleep_precise(table->time_to_compile, table);
 
 	update_queue(coder->first_dongle);
 	pthread_mutex_unlock(&coder->first_dongle->mutex);
+	set_long(&coder->first_dongle->mutex, &coder->first_dongle->last_used_time, get_time());
+
 	update_queue(coder->second_dongle);
 	pthread_mutex_unlock(&coder->second_dongle->mutex);
+	set_long(&coder->second_dongle->mutex, &coder->second_dongle->last_used_time, get_time());
 
 	if (coder->compilations_counter >=
 		get_long(&table->mutex, &table->number_of_compiles_required))
@@ -63,15 +77,17 @@ void	*thread_job(void *v_coder)
 	{
 		if (get_bool(&coder->mutex, &coder->finished_compiling))
 			break ;
-
-		// 1) compiling
 		compiling(coder, table);
-	
-		// 2) debugging
-		debugging(coder, table);
 
-		// 3) refactoring
-		refactoring(coder, table);
+		if (get_bool(&table->mutex, &table->end_process))
+			break ;
+		write_log(coder, DEBUGGING);
+		usleep_precise(table->time_to_debug, table);
+
+		if (get_bool(&table->mutex, &table->end_process))
+			break ;
+		write_log(coder, REFACTORING);
+		usleep_precise(table->time_to_refactor, table);
 
 	}
 	return (NULL);

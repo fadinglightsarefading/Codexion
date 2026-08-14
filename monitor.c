@@ -7,15 +7,19 @@ static bool	coder_burntout(t_coder *coder)
 
 	if (get_bool(&coder->mutex, &coder->finished_compiling))
 		return (false);
-	if (!get_long(&coder->mutex, &coder->last_compile_start))
+	if (get_long(&coder->mutex, &coder->last_compile_start) == -1L)
 		return (false);
 	time_elapsed = get_time() - get_long(&coder->mutex, &coder->last_compile_start);
 	time_to_burnout = coder->table->time_to_burnout;
 	if (time_elapsed > time_to_burnout)
+		return (true);
+	/*
+	if (time_elapsed > time_to_burnout)
 	{
-		printf("time elapsed %ld\nburnout time %ld", time_elapsed, time_to_burnout);
+		printf("time elapsed %ld\nburnout time %ld\n", time_elapsed, time_to_burnout);
 		return (true);
 	}
+	*/
 	return (false);
 }
 

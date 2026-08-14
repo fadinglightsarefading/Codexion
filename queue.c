@@ -36,3 +36,14 @@ void	update_queue(t_dongle *dongle)
 		pthread_cond_signal((t_cond *)dongle->queue->content);
 	pthread_mutex_unlock(&dongle->scheduler_mutex);
 }
+
+int	quit_queue_failsafe(t_table *table, t_coder *coder)
+{
+	if (get_bool(&table->mutex, &table->end_process) || coder->finished_compiling)
+	{
+		update_queue(coder->first_dongle);
+		update_queue(coder->second_dongle);
+		return (1);
+	}
+	return (0);
+}

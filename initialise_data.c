@@ -28,7 +28,7 @@ static int	initialise_coders(t_table *table)
 		coder = &table->coders[i];
 		coder->id = i + 1;
 		coder->compilations_counter = 0;
-		coder->last_compile_start = 0L;
+		coder->last_compile_start = -1L;
 		coder->finished_compiling = false;
 		coder->table = table;
 		coder->mutex_init = false;
@@ -74,6 +74,7 @@ static int	initialise_dongles(t_table *table)
 		table->dongles[i].scheduler_mutex_init = true;
 		table->dongles[i].dongle_id = i;
 		table->dongles[i].queue = NULL;
+		table->dongles[i].last_used_time = -1L;
 	}
 	return (0);
 }
