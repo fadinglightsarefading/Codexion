@@ -3,7 +3,7 @@ NAME	=	codexion
 FLAGS	=	-Wall -Wextra -Werror -pthread -g
 
 SRC	=	main.c error.c utils.c getters_setters.c parse_arguments.c initialise_data.c \
-		simulation.c log.c linked_list.c queue.c monitor.c wait.c clean.c
+		simulation.c log.c linked_list.c queue.c monitor.c wait.c acquire_dongles.c  clean.c
 
 OBJ	=	$(SRC:.c=.o)
 

@@ -12,17 +12,17 @@ void	write_log(t_coder *coder, t_log log_code)
 		pthread_mutex_unlock(&coder->table->write_mutex);
 		return ;
 	}
-	time_elapsed = get_time() - coder->table->start_time;
+	time_elapsed = get_time() - get_long(&table->mutex, &table->start_time);
 	if (log_code == DONGLE)
-		printf("%ld %d has taken a dongle\n", time_elapsed, coder->id);
+		printf("%ld\t%d has taken a dongle\n", time_elapsed, coder->id);
 	else if (log_code == COMPILING)
-		printf(BOLD "%ld %d is compiling\n" RESET, time_elapsed, coder->id);
+		printf(BOLD "%ld\t%d is compiling\n" RESET, time_elapsed, coder->id);
 	else if (log_code == DEBUGGING)
-		printf("%ld %d is debugging\n", time_elapsed, coder->id);
+		printf("%ld\t%d is debugging\n", time_elapsed, coder->id);
 	else if (log_code == REFACTORING)
-		printf("%ld %d is refactoring\n", time_elapsed, coder->id);
+		printf("%ld\t%d is refactoring\n", time_elapsed, coder->id);
 	else if (log_code == BURNTOUT)
-		printf(RED BOLD "%ld %d has burnt out\n" RESET,
+		printf(RED BOLD "%ld\t%d has burnt out\n" RESET,
 			time_elapsed, coder->id);
 	pthread_mutex_unlock(&coder->table->write_mutex);
 }

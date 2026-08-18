@@ -18,24 +18,18 @@ static void	compiling(t_table *table, t_coder *coder)
 		return ;
 	if (quit_queue_failsafe(table, coder))
 		return ;
-	pthread_mutex_lock(&coder->first_dongle->mutex);
-	write_log(coder, DONGLE);
-	if (table->number_of_coders == 1)
-		return (single_coder_in_your_area(table, coder->first_dongle));
-	pthread_mutex_lock(&coder->second_dongle->mutex);
-	write_log(coder, DONGLE);
+	if (acquire_dongles(coder, coder->first_dongle, coder->second_dongle))
+		return ;
 	set_long(&coder->mutex, &coder->last_compile_start, get_time());
 	coder->compilations_counter++;
 	write_log(coder, COMPILING);
 	usleep_precise(table->time_to_compile, table);
 	update_queue(coder->first_dongle);
+	coder->first_dongle->last_used_time = get_time();
 	pthread_mutex_unlock(&coder->first_dongle->mutex);
-	set_long(&coder->first_dongle->mutex,
-		&coder->first_dongle->last_used_time, get_time());
 	update_queue(coder->second_dongle);
+	coder->second_dongle->last_used_time = get_time();
 	pthread_mutex_unlock(&coder->second_dongle->mutex);
-	set_long(&coder->second_dongle->mutex,
-		&coder->second_dongle->last_used_time, get_time());
 	if (coder->compilations_counter
 		>= get_long(&table->mutex, &table->number_of_compiles_required))
 		set_bool(&coder->mutex, &coder->finished_compiling, true);
@@ -83,7 +77,7 @@ void	start_compilation(t_table *table)
 	}
 	if (pthread_create(&table->monitor, NULL, monitor_routine, table))
 		void_err("Thread creation failure @ start_compiling()", table);
-	table->start_time = get_time();
+	set_long(&table->mutex, &table->start_time, get_time());
 	wait_all_coders_ready(table);
 	j = -1;
 	while (++j < i)

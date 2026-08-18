@@ -142,7 +142,9 @@ void		wait_all_coders_ready(t_table *table);
 void		dongle_cooldown(t_coder *coder, t_dongle *dongle);
 int			wait_dongle_available(t_coder *coder, t_dongle *first,
 				t_dongle *second);
-void		single_coder_in_your_area(t_table *table, t_dongle *dongle);
+
+// acquire_dongles.c
+int			acquire_dongles(t_coder *coder, t_dongle *first, t_dongle *second);
 
 // clean.c
 void		clean(t_table *table);

@@ -27,8 +27,10 @@ int	wait_dongle_available(t_coder *coder, t_dongle *first, t_dongle *second)
 {
 	if (coder->table->scheduler == FIFO)
 	{
+		pthread_mutex_lock(&first->scheduler_mutex);
 		if (enter_queue_fifo(coder, first))
 			return (1);
+		pthread_mutex_lock(&second->scheduler_mutex);
 		if (enter_queue_fifo(coder, second))
 			return (1);
 	}
@@ -40,21 +42,10 @@ int	wait_dongle_available(t_coder *coder, t_dongle *first, t_dongle *second)
 			return (1);
 	}
 	else
-	{
-		set_bool(&coder->table->mutex, &coder->table->end_process, true);
-		return (1);
-	}
+		return (42);
 	wait_queue(coder, first);
 	wait_queue(coder, second);
 	dongle_cooldown(coder, first);
 	dongle_cooldown(coder, second);
 	return (0);
-}
-
-void	single_coder_in_your_area(t_table *table, t_dongle *dongle)
-{
-	pthread_mutex_lock(&table->mutex);
-	pthread_cond_wait(&table->cond, &table->mutex);
-	pthread_mutex_unlock(&table->mutex);
-	pthread_mutex_unlock(&dongle->mutex);
 }
