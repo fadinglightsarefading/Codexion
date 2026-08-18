@@ -23,7 +23,7 @@ used in order to explain certain concepts for my dumb brain to understand, debug
 scenarios.
 
 ### Additional Information
-##### Blocking Cases Handled
+#### Blocking Cases Handled
 Deadlock was prevented simply by assigning every first dongle to alternating hands; that is, rather than
 having every coder take their left dongle first (thus causing a deadlock), every second coder will take
 their right dongle first, the rest having their left dongle be the one taken first. This leaves at the
@@ -36,7 +36,7 @@ Dongle cooldowns were dealt with by putting coders to sleep, but only the amount
 cooldown.
 
 Logs were properly serialised by way of mutexes.
-##### Thread Synchronization Mechanisms
+#### Thread Synchronization Mechanisms
 Mutexes and conds were used basically everywhere necessary, which is a lot of places. Of especial help
 was the implementation of 'getters' and 'setters', which are functions that return and set (in the case of
 my programme) long and boolean values ('shared resources'), keeping them thread safe by being wrapped in
