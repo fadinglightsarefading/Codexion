@@ -13,6 +13,7 @@ in milliseconds). There are as many dongles as coders, hence the problems concer
 In order, the arguments are `number_of_coders`, `time_to_burnout`, `time_to_compile`, `time_to_debug`,
 `time_to_refactor`, `number_of_compiles_required`, `dongle_cooldown`, `scheduler`, the last being
 necessarily one of two keywords: `fifo` (first in, first out) and `edf` (earliest deadline first).
+
 Furthermore, `make clean` will remove all `.o` files, `make fclean` will remove all `.o` files as well as
 the executable, and `make re` will recompile the executable with brand new `.o` files.
 ### Resources
@@ -27,22 +28,26 @@ Deadlock was prevented simply by assigning every first dongle to alternating han
 having every coder take their left dongle first (thus causing a deadlock), every second coder will take
 their right dongle first, the rest having their left dongle be the one taken first. This leaves at the
 *very least* 2 coders to start compiling when there is an even number of coders, and 1 coder when their
-number is odd.\
+number is odd.
+
 Coders are prevented from starving by way of correct queue implementation and the assumntion that
 appropriate arguments are given. (Impossible numbers will thus mathematically necessitate burnout.)\
 Dongle cooldowns were dealt with by putting coders to sleep, but only the amount of time that was left for
-cooldown.\
-Logs were properly serialised by way of mutexes.\
+cooldown.
+
+Logs were properly serialised by way of mutexes.
 ##### Thread Synchronization Mechanisms
 Mutexes and conds were used basically everywhere necessary, which is a lot of places. Of especial help
 was the implementation of 'getters' and 'setters', which are functions that return and set (in the case of
 my programme) long and boolean values ('shared resources'), keeping them thread safe by being wrapped in
-mutex-locks and -unlocks in the meantime.\
+mutex-locks and -unlocks in the meantime.
+
 A particular example of race condition prevention is used with the `end_process` boolean value, which
 every thread needs to check (using the abovementioned 'getter') multiple times in each one of its cycles
 (e.g. after finishing a cycle, spending time compiling, or spending time waiting for dongle availability).
 A coder burning out triggers the monitor thread to change the value of `end_process` to `true` (this time
-using a 'setter'), which is why it is important that each coder checks it very often.\
+using a 'setter'), which is why it is important that each coder checks it very often.
+
 I use conds for coders as well in order to have them wait before they are all finished being created. In the
 `thread_job()` function, every coder waits at the preliminary while loop in which `pthread_cond_wait()` is
 placed and the boolean `all_coders_ready` (also mutex protected) is the constituent of the conditional
