@@ -62,7 +62,7 @@ static const char	*valid_input(const char *str)
 	return (number);
 }
 
-static unsigned int	ft_atoui(const char *str, bool *err_flag)
+static long	ft_atol(const char *str, bool *err_flag)
 {
 	long	num;
 
@@ -79,7 +79,7 @@ static unsigned int	ft_atoui(const char *str, bool *err_flag)
 		num = (num * 10) + (*str++ - 48);
 	if (num > INT_MAX)
 		return (int_err("Arguments must be <=INT_MAX", err_flag));
-	return ((unsigned int)num);
+	return (num);
 }
 
 int	parse_arguments(char *argv[], t_table *table)
@@ -92,13 +92,13 @@ int	parse_arguments(char *argv[], t_table *table)
 		return (1);
 	err_flag = false;
 	*table = (t_table){
-		.number_of_coders = ft_atoui(argv[1], &err_flag),
-		.time_to_burnout = ft_atoui(argv[2], &err_flag),
-		.time_to_compile = ft_atoui(argv[3], &err_flag),
-		.time_to_debug = ft_atoui(argv[4], &err_flag),
-		.time_to_refactor = ft_atoui(argv[5], &err_flag),
-		.number_of_compiles_required = ft_atoui(argv[6], &err_flag),
-		.dongle_cooldown = ft_atoui(argv[7], &err_flag),
+		.number_of_coders = ft_atol(argv[1], &err_flag),
+		.time_to_burnout = ft_atol(argv[2], &err_flag),
+		.time_to_compile = ft_atol(argv[3], &err_flag),
+		.time_to_debug = ft_atol(argv[4], &err_flag),
+		.time_to_refactor = ft_atol(argv[5], &err_flag),
+		.number_of_compiles_required = ft_atol(argv[6], &err_flag),
+		.dongle_cooldown = ft_atol(argv[7], &err_flag),
 		.scheduler = scheduler
 	};
 	if (err_flag)
