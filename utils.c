@@ -30,28 +30,3 @@ void	usleep_precise(long duration, t_table *table)
 				;
 	}
 }
-
-void	clean(t_table *table)
-{
-	int	i;
-
-	if (table->dongles)
-	{
-		i = -1;
-		while (table->dongles[++i].mutex_init)
-			pthread_mutex_destroy(&table->dongles[i].mutex);
-		free(table->dongles);
-	}
-	if (table->coders)
-	{
-		i = -1;
-		while (table->coders[++i].mutex_init)
-			pthread_mutex_destroy(&table->coders[i].mutex);
-		free(table->coders);
-	}
-	if (table->mutex_init)
-		pthread_mutex_destroy(&table->mutex);
-	if (table->cond_init)
-		pthread_cond_destroy(&table->cond);
-	// function free()ing dongle queue nodes
-}

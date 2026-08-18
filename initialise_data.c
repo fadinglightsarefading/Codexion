@@ -1,25 +1,25 @@
 #include "codexion.h"
 
-static void	assign_dongles(t_coder *coder, t_dongle *dongles, int coder_position)
+static void	assign_dongles(t_coder *coder, t_dongle *dongles, int coder_pos)
 {
 	int	num_coders;
 
 	num_coders = coder->table->number_of_coders;
 	if (coder->id % 2 == 0)
 	{
-		coder->first_dongle = &dongles[(coder_position + 1) % num_coders];
-		coder->second_dongle = &dongles[coder_position];
+		coder->first_dongle = &dongles[(coder_pos + 1) % num_coders];
+		coder->second_dongle = &dongles[coder_pos];
 	}
 	else
 	{
-		coder->first_dongle = &dongles[coder_position];
-		coder->second_dongle = &dongles[(coder_position + 1) % num_coders];
+		coder->first_dongle = &dongles[coder_pos];
+		coder->second_dongle = &dongles[(coder_pos + 1) % num_coders];
 	}
 }
 
 static int	initialise_coders(t_table *table)
 {
-	int	i;
+	int		i;
 	t_coder	*coder;
 
 	i = -1;
@@ -48,12 +48,16 @@ static int	init_table_mutex_cond(t_table *table)
 {
 	table->mutex_init = false;
 	table->cond_init = false;
+	table->write_mutex_init = false;
 	if (pthread_mutex_init(&table->mutex, NULL))
 		return (int_err("Mutex init failure @ initialise_data()", NULL));
 	table->mutex_init = true;
 	if (pthread_cond_init(&table->cond, NULL))
 		return (int_err("Cond init failure @ initialise_data()", NULL));
 	table->cond_init = true;
+	if (pthread_mutex_init(&table->write_mutex, NULL))
+		return (int_err("Mutex init failure @ initialise_data()", NULL));
+	table->write_mutex_init = true;
 	return (0);
 }
 
@@ -72,7 +76,7 @@ static int	initialise_dongles(t_table *table)
 		if (pthread_mutex_init(&table->dongles[i].scheduler_mutex, NULL))
 			return (int_err("Mutex failure @ initialise_data()", NULL));
 		table->dongles[i].scheduler_mutex_init = true;
-		table->dongles[i].dongle_id = i;
+		table->dongles[i].id = i + 1;
 		table->dongles[i].queue = NULL;
 		table->dongles[i].last_used_time = -1L;
 	}
